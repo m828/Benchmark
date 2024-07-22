@@ -5,9 +5,12 @@ import yaml
 import torchprofile
 from thop import profile
 
-
-from vision.segmentation.unet.pytorch.unet import unet
+from vision.classification.resnet.pytorch.resnet import resnet50
+from vision.classification.mobilenet.pytorch.mobilenetv2 import mobilenet_v2
 from vision.detection.yolov5.pytorch.yolov5 import Model
+from vision.segmentation.unet.pytorch.unet import unet
+from vision.segmentation.bisenetv2.pytorch.bisenetv2 import BiSeNetV2
+
 device = torch.device('cuda')
 
 parser = argparse.ArgumentParser()
@@ -18,9 +21,17 @@ with open(opt.cfg) as fp:
 # opt.cfg = check_yaml(opt.cfg)  # check YAML
 
 input = torch.randn(1, 3, 640, 640).to(device)
-model = Model(opt.cfg).to(device)
-# model = unet(in_channels=3, out_channels=8)
 
+# 分类
+# model = mobilenet_v2()
+# model = resnet50()
+
+# 检测
+# model = Model(opt.cfg).to(device)
+
+# 分割
+model = BiSeNetV2(n_classes=4)
+# model = unet(in_channels=3, out_channels=8)
 model.eval()
 model.to(device)
 
