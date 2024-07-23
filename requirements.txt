@@ -1,1 +1,10 @@
-
+torchprofile
+torch
+pynvml
+numpy
+opencv-python
+pillow
+thop
+yaml
+argparse
+matplotlib

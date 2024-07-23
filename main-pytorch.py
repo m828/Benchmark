@@ -1,4 +1,6 @@
+import os
 import torch
+import json
 import time
 import argparse
 import yaml
@@ -8,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import pynvml
 import threading
+import subprocess
 from vision.segmentation.unet.pytorch.unet import unet
 from vision.detection.yolov5.pytorch.yolov5 import Model
 # rcParams['font.sans-serif'] = ['SimHei'] 
@@ -66,21 +69,45 @@ def speed_test(model, input, iterations):
     # return FPS, latency
     
 
-# 计算模型参数量和FLOPs
-def count_parameters_and_flops(model, input):
+def load_config(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        config = json.load(file)
+    return config
 
-    flops, params = profile(model, inputs=(input,), verbose=False) 
+def choose_option(options, prompt):
+    print(prompt)
+    for key, value in options.items():
+        print(f"{key}. {value}")
+    choice = input("输入选项编号：")
+    while choice not in options:
+        print("无效的选项，请重新输入。")
+        choice = input("输入选项编号：")
+    return options[choice]
 
-    return flops / 1e9 * 2,  params / 1e6
 
 
 
-###############程序初始化设置#############
+
+
+########################################################################
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+subprocess.run(['python', os.path.join(script_dir, 'update_config.py')], check=True) #刷新模型文件
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cfg", type=str, default="vision/detection/yolov5/pytorch/configs/yolov5x.yaml", help="model.yaml")
 parser.add_argument("--iterations", type=int, default=1000, help="迭代次数")
 opt = parser.parse_args()
+
+config = load_config('config.json')
+category = choose_option(config['categories'], "选择AI应用领域：")
+application = choose_option(config['applications'][category], f"选择{category} 中的应用场景：")
+model = choose_option(config['models'][category][application], f"选择{application} 中的具体模型：")
+
+print(f"你选择了 {category} 领域中的 {application} 场景下的 {model} 模型")
+
+opt.cfg = category + '/'+ application + '/pytorch/'+ model+ '.py'
+
 
 with open(opt.cfg) as fp:
         opt.cfg= yaml.safe_load(fp)
