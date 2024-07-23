@@ -7,7 +7,11 @@ import paddle.nn as nn
 
 from vision.classification.resnet.paddle.resnet import ResNet50
 from vision.classification.mobilenet.paddle.mobilenetv2  import MobileNetV2
-
+from vision.detection.ghostnet.paddle.ghostnet import GhostNet
+from vision.segmentation.bisenetv2.paddle.bisenetv2 import BiSeNetV2
+from vision.segmentation.unet.paddle.unet import UNet
+from vision.detection.yolov8.paddle.yolov8 import YOLOv8CSPDarkNet
+from vision.detection.yolov5.paddle.yolov5 import YOLOv5
 
 device = paddle.set_device('gpu')
 
@@ -22,12 +26,16 @@ input = paddle.randn([1, 3, 640, 640], dtype='float32')
 
 # 分类
 # model = MobileNetV2()
-model = ResNet50()
+# model = ResNet50()
+# model = GhostNet()
 
 # 检测
 # model = Model(opt.cfg).to(device)
+model = YOLOv8CSPDarkNet()
 
 # 分割
+# model = BiSeNetV2(num_classes = 19)
+# model = UNet(num_classes = 19)
 
 # model = unet(in_channels=3, out_channels=8)
 model.eval()
