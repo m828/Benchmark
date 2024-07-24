@@ -22,7 +22,7 @@ from paddleseg.models import layers
 
 
 @manager.MODELS.add_component
-class UNet(nn.Layer):
+class unet(nn.Layer):
     """
     The UNet implementation based on PaddlePaddle.
 
@@ -41,7 +41,7 @@ class UNet(nn.Layer):
     """
 
     def __init__(self,
-                 num_classes,
+                 num_classes=19,
                  align_corners=False,
                  use_deconv=False,
                  in_channels=3,

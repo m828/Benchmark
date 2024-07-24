@@ -12,7 +12,7 @@ import os
 
 
 # backbone_url = 'https://github.com/CoinCheung/BiSeNet/releases/download/0.0.0/backbone_v2.pth'
-local_path = 'model/backbone_v2.pth'
+# local_path = 'model/backbone_v2.pth'
 
 class ConvBNReLU(nn.Module):
 
@@ -316,10 +316,10 @@ class SegmentHead(nn.Module):
         return feat
 
 
-class BiSeNetV2(nn.Module):
+class bisenetv2(nn.Module):
 
-    def __init__(self, n_classes, aux_mode='train'):
-        super(BiSeNetV2, self).__init__()
+    def __init__(self, n_classes=19, aux_mode='train'):
+        super(bisenetv2, self).__init__()
         self.aux_mode = aux_mode
         self.detail = DetailBranch()
         self.segment = SegmentBranch()
@@ -397,54 +397,4 @@ if __name__ == '__main__':
     device = torch.device('cuda')
 
 
-    model = BiSeNetV2(n_classes=4)
-    model.eval()
-    model.to(device)
-    iterations = None
-
-    input = torch.randn(1, 3, 192, 192).cuda()
-    with torch.no_grad():
-        for _ in range(10):
-            model(input)
-
-        if iterations is None:
-            elapsed_time = 0
-            iterations = 100
-            while elapsed_time < 1:
-                torch.cuda.synchronize()
-                torch.cuda.synchronize()
-                t_start = time.time()
-                for _ in range(iterations):
-                    model(input)
-                torch.cuda.synchronize()
-                torch.cuda.synchronize()
-                elapsed_time = time.time() - t_start
-                iterations *= 2
-            FPS = iterations / elapsed_time
-            iterations = int(FPS * 6)
-
-        print('=========Speed Testing=========')
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        t_start = time.time()
-        for _ in range(iterations):
-            model(input)
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        elapsed_time = time.time() - t_start
-        latency = elapsed_time / iterations * 1000
-
-    # 输出模型参数量
-    total_params = sum(p.numel() for p in model.parameters())
-   
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    # 转换为以“万”为单位
-    total_params_in_million = total_params / 1e6
-    trainable_params_in_million = trainable_params / 1e6
-
-    print(f"Total parameters: {total_params_in_million:.2f} million")
-    print(f"Trainable parameters: {trainable_params_in_million:.2f} million")
-
-    torch.cuda.empty_cache()
-    FPS = 1000 / latency
-    print(FPS)
+    model = bisenetv2(n_classes=4)

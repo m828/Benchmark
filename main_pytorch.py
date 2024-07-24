@@ -4,15 +4,13 @@ import json
 import time
 import argparse
 import yaml
-import torchprofile
 from thop import profile
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import pynvml
 import threading
 import subprocess
-from vision.segmentation.unet.pytorch.unet import unet
-from vision.detection.yolov5.pytorch.yolov5 import Model
+
 # rcParams['font.sans-serif'] = ['SimHei'] 
 
 
@@ -129,14 +127,12 @@ spec.loader.exec_module(model_module)
 model_class = getattr(model_module, model)
 
 # 实例化模型
-model = model_class(in_channels=3, out_channels=8)
-
+model = model_class()
 
 
 device = torch.device('cuda')
 input = torch.randn(1, 3, 640, 640).to(device)
-# model = Model(opt.cfg).to(device)
-# model = unet(in_channels=3, out_channels=8)
+
 
 model.eval()
 model.to(device)

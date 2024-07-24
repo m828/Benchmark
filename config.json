@@ -5,27 +5,27 @@
     },
     "applications": {
         "vision": {
-            "1": "segmentation",
-            "2": "detection",
+            "1": "detection",
+            "2": "segmentation",
             "3": "classification"
         },
         "language": {}
     },
     "models": {
         "vision": {
-            "segmentation": {
-                "1": "unet",
-                "2": "__pycache__",
-                "3": "bisenetv2"
-            },
             "detection": {
                 "1": "yolov8",
-                "2": "yolov5",
-                "3": "ghostnet"
+                "2": "ghostnet",
+                "3": "yolov5"
+            },
+            "segmentation": {
+                "1": "__pycache__",
+                "2": "bisenetv2",
+                "3": "unet"
             },
             "classification": {
-                "1": "resnet",
-                "2": "mobilenet"
+                "1": "mobilenet",
+                "2": "resnet"
             }
         },
         "language": {}

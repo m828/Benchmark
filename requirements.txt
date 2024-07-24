@@ -1,4 +1,4 @@
-torchprofile
+
 torch
 pynvml
 numpy
