@@ -23,7 +23,6 @@ from paddle.regularizer import L2Decay
 
 from numbers import Integral
 
-__all__ = ['GhostNet']
 
 from collections import namedtuple
 
@@ -373,7 +372,7 @@ class GhostBottleneck(nn.Layer):
 
 
 
-class GhostNet(nn.Layer):
+class ghostnet(nn.Layer):
     __shared__ = ['norm_type']
 
     def __init__(
@@ -387,7 +386,7 @@ class GhostNet(nn.Layer):
             norm_type='bn',
             norm_decay=0.0,
             freeze_norm=False):
-        super(GhostNet, self).__init__()
+        super(ghostnet, self).__init__()
         if isinstance(feature_maps, Integral):
             feature_maps = [feature_maps]
         if norm_type == 'sync_bn' and freeze_norm:

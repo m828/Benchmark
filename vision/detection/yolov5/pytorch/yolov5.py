@@ -25,7 +25,7 @@ if str(ROOT) not in sys.path:
 if platform.system() != "Windows":
     ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from .utils.common import (
+from vision.detection.yolov5.pytorch.utils.common import (
     C3,
     C3SPP,
     C3TR,
@@ -49,11 +49,11 @@ from .utils.common import (
     GhostConv,
     Proto,
 )
-from .utils.experimental import MixConv2d
-from .utils.autoanchor import check_anchor_order
-from .utils.general import LOGGER, check_version, check_yaml, colorstr, make_divisible, print_args
-from .utils.plots import feature_visualization
-from .utils.torch_utils import (
+from vision.detection.yolov5.pytorch.utils.experimental import MixConv2d
+from vision.detection.yolov5.pytorch.utils.autoanchor import check_anchor_order
+from vision.detection.yolov5.pytorch.utils.general import LOGGER, check_version, check_yaml, colorstr, make_divisible, print_args
+from vision.detection.yolov5.pytorch.utils.plots import feature_visualization
+from vision.detection.yolov5.pytorch.utils.torch_utils import (
     fuse_conv_and_bn,
     initialize_weights,
     model_info,
@@ -328,7 +328,7 @@ class DetectionModel(BaseModel):
             mi.bias = torch.nn.Parameter(b.view(-1), requires_grad=True)
 
 
-Model = DetectionModel  # retain YOLOv5 'Model' class for backwards compatibility
+Model = DetectionModel  # retain YOLOv5 'Model' class for backwards compatibilityv
 
 
 class SegmentationModel(DetectionModel):
@@ -454,11 +454,22 @@ def parse_model(d, ch):
         ch.append(c2)
     return nn.Sequential(*layers), sorted(save)
 
+def yolov5():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cfg", type=str, default="vision/detection/yolov5/pytorch/configs/yolov5s.yaml", help="model.yaml")
+    parser.add_argument("--profile", action="store_true", help="profile model speed")
+    parser.add_argument("--line-profile", action="store_true", help="profile model speed layer by layer")
+    parser.add_argument("--test", action="store_true", help="test all yolo*.yaml")
+    opt = parser.parse_args()
+    opt.cfg = check_yaml(opt.cfg)
+
+    return Model(opt.cfg)
+
 
 if __name__ == "__main__":
     import time
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cfg", type=str, default="/workspace/Subregion-Unet/subregion unet/val_speed/yolov5x.yaml", help="model.yaml")
+    parser.add_argument("--cfg", type=str, default="./configs/yolov5s.yaml", help="model.yaml")
     # parser.add_argument("--batch-size", type=int, default=1, help="total batch size for all GPUs")
 
     parser.add_argument("--profile", action="store_true", help="profile model speed")

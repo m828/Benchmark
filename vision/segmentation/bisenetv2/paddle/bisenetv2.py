@@ -24,7 +24,7 @@ from paddleseg.models import layers
 
 
 @manager.MODELS.add_component
-class BiSeNetV2(nn.Layer):
+class bisenetv2(nn.Layer):
     """
     The BiSeNet V2 implementation based on PaddlePaddle.
 
@@ -40,7 +40,7 @@ class BiSeNetV2(nn.Layer):
     """
 
     def __init__(self,
-                 num_classes,
+                 num_classes=19,
                  lambd=0.25,
                  align_corners=False,
                  in_channels=3,
