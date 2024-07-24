@@ -35,16 +35,22 @@ def convert_to_config_format(dir_structure):
         "models": {}
     }
     
-    for i, category in enumerate(dir_structure.keys(), start=1):
+    sorted_categories = sorted(dir_structure.keys())
+
+    for i, category in enumerate(sorted_categories, start=1):
         config["categories"][str(i)] = category
         config["applications"][category] = {}
         config["models"][category] = {}
+
+        sorted_applications = sorted(dir_structure[category].keys())
         
-        for j, application in enumerate(dir_structure[category].keys(), start=1):
+        for j, application in enumerate(sorted_applications, start=1):
             config["applications"][category][str(j)] = application
             config["models"][category][application] = {}
+
+            sorted_models = sorted(dir_structure[category][application].keys())
             
-            for k, model in enumerate(dir_structure[category][application].keys(), start=1):
+            for k, model in enumerate(sorted_models, start=1):
                 config["models"][category][application][str(k)] = model
 
     return config
