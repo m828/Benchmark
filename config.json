@@ -14,13 +14,14 @@
     "models": {
         "vision": {
             "segmentation": {
-                "1": "bisenet",
-                "2": "unet",
-                "3": "__pycache__",
-                "4": "bisenetv2"
+                "1": "unet",
+                "2": "__pycache__",
+                "3": "bisenetv2"
             },
             "detection": {
-                "1": "yolov5"
+                "1": "yolov8",
+                "2": "yolov5",
+                "3": "ghostnet"
             },
             "classification": {
                 "1": "resnet",

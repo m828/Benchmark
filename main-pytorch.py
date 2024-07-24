@@ -15,6 +15,9 @@ from vision.segmentation.unet.pytorch.unet import unet
 from vision.detection.yolov5.pytorch.yolov5 import Model
 # rcParams['font.sans-serif'] = ['SimHei'] 
 
+
+import importlib.util
+
 # 监控 GPU 使用情况
 def get_gpu_info():
     handle = pynvml.nvmlDeviceGetHandleByIndex(0)
@@ -84,7 +87,11 @@ def choose_option(options, prompt):
         choice = input("输入选项编号：")
     return options[choice]
 
+def count_parameters_and_flops(model, input):
 
+    flops, params = profile(model, inputs=(input,), verbose=False) 
+
+    return flops / 1e9 * 2,  params / 1e6
 
 
 
@@ -96,7 +103,7 @@ subprocess.run(['python', os.path.join(script_dir, 'update_config.py')], check=T
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cfg", type=str, default="vision/detection/yolov5/pytorch/configs/yolov5x.yaml", help="model.yaml")
-parser.add_argument("--iterations", type=int, default=1000, help="迭代次数")
+parser.add_argument("--iterations", type=int, default=None, help="迭代次数")
 opt = parser.parse_args()
 
 config = load_config('config.json')
@@ -106,17 +113,29 @@ model = choose_option(config['models'][category][application], f"选择{applicat
 
 print(f"你选择了 {category} 领域中的 {application} 场景下的 {model} 模型")
 
-opt.cfg = category + '/'+ application + '/pytorch/'+ model+ '.py'
 
 
-with open(opt.cfg) as fp:
-        opt.cfg= yaml.safe_load(fp)
-# opt.cfg = check_yaml(opt.cfg)  # check YAML
+
+
+# 模型脚本的路径
+model_script_path = category + '/'+ application + '/'+ model+'/pytorch/'+ model+ '.py'
+
+# 动态加载模块
+spec = importlib.util.spec_from_file_location("model_module", model_script_path)
+model_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(model_module)
+
+# 获取模型类
+model_class = getattr(model_module, model)
+
+# 实例化模型
+model = model_class(in_channels=3, out_channels=8)
+
 
 
 device = torch.device('cuda')
 input = torch.randn(1, 3, 640, 640).to(device)
-model = Model(opt.cfg).to(device)
+# model = Model(opt.cfg).to(device)
 # model = unet(in_channels=3, out_channels=8)
 
 model.eval()
@@ -190,6 +209,7 @@ FPS, latency = model_performance[0], model_performance[1]
 flops, params = count_parameters_and_flops(model, input)
 
 print(f"Total parameters: {params:.2f} million")
+
 # print(f"Trainable parameters: {trainable_params:.2f} million")
 print(f"Total GFLOPs: {flops:.2f}")
 print(f"FPS: {FPS:.2f}")
