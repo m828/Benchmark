@@ -1,33 +1,32 @@
 {
     "categories": {
-        "1": "vision",
-        "2": "language"
+        "1": "language",
+        "2": "vision"
     },
     "applications": {
+        "language": {},
         "vision": {
-            "1": "detection",
-            "2": "segmentation",
-            "3": "classification"
-        },
-        "language": {}
+            "1": "classification",
+            "2": "detection",
+            "3": "segmentation"
+        }
     },
     "models": {
+        "language": {},
         "vision": {
-            "detection": {
-                "1": "yolov8",
-                "2": "ghostnet",
-                "3": "yolov5"
-            },
-            "segmentation": {
-                "1": "__pycache__",
-                "2": "bisenetv2",
-                "3": "unet"
-            },
             "classification": {
                 "1": "mobilenet",
                 "2": "resnet"
+            },
+            "detection": {
+                "1": "ghostnet",
+                "2": "yolov5",
+                "3": "yolov8"
+            },
+            "segmentation": {
+                "1": "bisenetv2",
+                "2": "unet"
             }
-        },
-        "language": {}
+        }
     }
 }
