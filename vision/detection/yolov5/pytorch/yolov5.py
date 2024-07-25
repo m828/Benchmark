@@ -371,7 +371,7 @@ class ClassificationModel(BaseModel):
 
 def parse_model(d, ch):
     """Parses a YOLOv5 model from a dict `d`, configuring layers based on input channels `ch` and model architecture."""
-    LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
+    # LOGGER.info(f"\n{'':>3}{'from':>18}{'n':>3}{'params':>10}  {'module':<40}{'arguments':<30}")
     anchors, nc, gd, gw, act, ch_mul = (
         d["anchors"],
         d["nc"],
@@ -455,82 +455,7 @@ def parse_model(d, ch):
     return nn.Sequential(*layers), sorted(save)
 
 def yolov5():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cfg", type=str, default="vision/detection/yolov5/pytorch/configs/yolov5s.yaml", help="model.yaml")
-    parser.add_argument("--profile", action="store_true", help="profile model speed")
-    parser.add_argument("--line-profile", action="store_true", help="profile model speed layer by layer")
-    parser.add_argument("--test", action="store_true", help="test all yolo*.yaml")
-    opt = parser.parse_args()
-    opt.cfg = check_yaml(opt.cfg)
-
-    return Model(opt.cfg)
+    cfg = "vision/detection/yolov5/pytorch/configs/yolov5s.yaml"
+    return Model(cfg)
 
 
-if __name__ == "__main__":
-    import time
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cfg", type=str, default="./configs/yolov5s.yaml", help="model.yaml")
-    # parser.add_argument("--batch-size", type=int, default=1, help="total batch size for all GPUs")
-
-    parser.add_argument("--profile", action="store_true", help="profile model speed")
-    parser.add_argument("--line-profile", action="store_true", help="profile model speed layer by layer")
-    parser.add_argument("--test", action="store_true", help="test all yolo*.yaml")
-    opt = parser.parse_args()
-    opt.cfg = check_yaml(opt.cfg)  # check YAML
-    print_args(vars(opt))
-    device = torch.device('cuda')
-
-    # Create model
-    input = torch.rand(1, 3, 640, 640).to(device)
-    model = Model(opt.cfg).to(device)
-
-    model.eval()
-    model.to(device)
-    iterations = None
-
-    # input = torch.randn(1, 3, 200, 200).cuda()
-    with torch.no_grad():
-        for _ in range(10):
-            model(input)
-
-        if iterations is None:
-            elapsed_time = 0
-            iterations = 100
-            while elapsed_time < 1:
-                torch.cuda.synchronize()
-                torch.cuda.synchronize()
-                t_start = time.time()
-                for _ in range(iterations):
-                    model(input)
-                torch.cuda.synchronize()
-                torch.cuda.synchronize()
-                elapsed_time = time.time() - t_start
-                iterations *= 2
-            FPS = iterations / elapsed_time
-            iterations = int(FPS * 6)
-
-        print('=========Speed Testing=========')
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        t_start = time.time()
-        for _ in range(iterations):
-            model(input)
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        elapsed_time = time.time() - t_start
-        latency = elapsed_time / iterations * 1000
-
-            # 输出模型参数量
-    total_params = sum(p.numel() for p in model.parameters())
-   
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    # 转换为以“万”为单位
-    total_params_in_million = total_params / 1e6
-    trainable_params_in_million = trainable_params / 1e6
-
-    print(f"Total parameters: {total_params_in_million:.2f} million")
-    print(f"Trainable parameters: {trainable_params_in_million:.2f} million")
-
-    torch.cuda.empty_cache()
-    FPS = 1000 / latency
-    print(FPS)

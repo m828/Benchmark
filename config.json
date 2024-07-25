@@ -24,7 +24,7 @@
         },
         "vision": {
             "classification": {
-                "1": "mobilenet",
+                "1": "mobilenetv2",
                 "2": "resnet"
             },
             "detection": {
