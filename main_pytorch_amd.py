@@ -16,20 +16,46 @@ import subprocess
 
 import importlib.util
 
-# # 监控 GPU 使用情况
-# def get_gpu_info():
-#     handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-#     mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-#     utilization = pynvml.nvmlDeviceGetUtilizationRates(handle)
-#     power_draw = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  
-#     return [utilization.gpu, mem_info.total / 1024**2, mem_info.used / 1024**2, power_draw]  
+# 监控 GPU 使用情况
+def get_gpu_info():
+    # 调用 rocm-smi 并解析输出
+    result = subprocess.run(['rocm-smi', '--showmeminfo', 'vram', '--showuse', '--json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-# def monitor_gpu_usage():
-#     start_event.wait()
-#     while True:
-#         gpu_info = get_gpu_info()
-#         gpu_usage_list.append(gpu_info)
-#         time.sleep(0.001)  # 1 毫秒
+    # 打印命令行输出用于调试
+    print("rocm-smi stdout:", result.stdout.decode('utf-8'))
+    print("rocm-smi stderr:", result.stderr.decode('utf-8'))
+    
+    try:
+        gpu_info = json.loads(result.stdout.decode('utf-8'))
+    except json.JSONDecodeError as e:
+        print("JSON decode error:", e)
+        gpu_info = {}
+
+    # 打印解析后的JSON结构
+    print("Parsed GPU Info:", gpu_info)
+
+    if not gpu_info:
+        return [0, 0, 0, 0]
+
+    card_key = list(gpu_info.keys())[0]  # 获取第一个卡的键名
+
+    # 提取并转换数值
+    mem_total = int(gpu_info[card_key].get('VRAM Total Memory (B)', 0))
+    mem_used = int(gpu_info[card_key].get('VRAM Total Used Memory (B)', 0))
+    usage = int(gpu_info[card_key].get('GPU use (%)', 0))
+    power_draw = int(gpu_info[card_key].get('Average Graphics Package Power (W)', 0))  # 如果存在的话
+
+    mem_info = mem_total / 1024**2, mem_used / 1024**2
+
+    return [usage, mem_info[0], mem_info[1], power_draw]
+
+def monitor_gpu_usage():
+    start_event.wait()
+    while True:
+        gpu_info = get_gpu_info()
+        gpu_usage_list.append(gpu_info)
+        time.sleep(0.001)  # 1 毫秒
+
 
 
 # 速度测试
@@ -180,58 +206,58 @@ else:
             model(input)
 
 # pynvml.nvmlInit()
-# start_event = threading.Event()
+start_event = threading.Event()
 
-# gpu_usage_list = [['GPU Index','GPU Memory','Memory Usage','GPU Power']] ##保存gpu使用情况的时间序列
+gpu_usage_list = [] ##保存gpu使用情况的时间序列
 model_performance = [] ##保存模型推理性能
 
 
-# #################模型推理和GPU监控双线程启动##############
+#################模型推理和GPU监控双线程启动##############
 
-# monitor_thread = threading.Thread(target=monitor_gpu_usage)
+monitor_thread = threading.Thread(target=monitor_gpu_usage)
 # monitor_thread.daemon = True
-# monitor_thread.start()  # 启动 GPU 监控线程
+monitor_thread.start()  # 启动 GPU 监控线程
 
-# iterations = opt.iterations
-# inference_thread = threading.Thread(target=speed_test(model, input, iterations = iterations))
-# inference_thread.start()  # 启动推理线程
+iterations = opt.iterations
+inference_thread = threading.Thread(target=speed_test(model, input, iterations = iterations))
+inference_thread.start()  # 启动推理线程
 
-# start_event.set()  # 触发事件，开始监控和推理
+start_event.set()  # 触发事件，开始监控和推理
 
-# inference_thread.join() # 等待推理完成
+inference_thread.join() # 等待推理完成
 
-# # 停止监控（如果需要，可以增加一个标志位来控制循环）
-# time.sleep(1)  # 确保监控线程完成最后的记录
+# 停止监控（如果需要，可以增加一个标志位来控制循环）
+time.sleep(1)  # 确保监控线程完成最后的记录
 
 
 
-# # 打印或处理 GPU 使用情况数据
-# # print(gpu_usage_list)
-# # for usage in gpu_usage_list:
-# #     print(usage)
+# 打印或处理 GPU 使用情况数据
+# print(gpu_usage_list)
+# for usage in gpu_usage_list:
+#     print(usage)
 
-# headers = gpu_usage_list[0]
+headers = gpu_usage_list[0]
 
-# column3 = [row[2] for row in gpu_usage_list[1:]]
-# column4 = [row[3] for row in gpu_usage_list[1:]]
+column3 = [row[2] for row in gpu_usage_list[1:]]
+column4 = [row[3] for row in gpu_usage_list[1:]]
 
-# fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
-# ax1.plot(column3, label=headers[2])
-# ax1.set_title(headers[2])
-# ax1.set_xlabel("Time (ms)")
-# ax1.set_ylabel("MiB")
-# ax1.legend()
+ax1.plot(column3, label=headers[2])
+ax1.set_title(headers[2])
+ax1.set_xlabel("Time (ms)")
+ax1.set_ylabel("MiB")
+ax1.legend()
 
-# ax2.plot(column4, label=headers[3])
-# ax2.set_title(headers[3])
-# ax2.set_xlabel("Time (ms)")
-# ax2.set_ylabel("W")
-# ax2.legend()
+ax2.plot(column4, label=headers[3])
+ax2.set_title(headers[3])
+ax2.set_xlabel("Time (ms)")
+ax2.set_ylabel("W")
+ax2.legend()
 
-# plt.tight_layout()
+plt.tight_layout()
 
-# plt.savefig('savefiles/gpu_usage.png')
+plt.savefig('savefiles/gpu_usage.png')
 
 
 ###############处理GPU监控结果和模型推理数据#############

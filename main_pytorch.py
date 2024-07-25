@@ -241,7 +241,7 @@ if category == 'language':
     FPS, latency = model_performance[0], model_performance[1]
     flops, params = model.count_parameters_and_flops()
 else:
-    speed_test(model, iterations = None)
+    speed_test(model, input, iterations = None)
     FPS, latency = model_performance[0], model_performance[1]
     flops, params = count_parameters_and_flops(model, input)
 
