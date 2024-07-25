@@ -68,7 +68,37 @@ def speed_test(model, input, iterations):
     #     model_performance.append(i)
 
     # return FPS, latency
-    
+
+def speed_tests(model, iterations):
+
+    if iterations is None:
+        elapsed_time = 0
+        iterations = 100
+        while elapsed_time < 1:
+            torch.cuda.synchronize()
+            torch.cuda.synchronize()
+            t_start = time.time()
+            for _ in range(iterations):
+                model.forward()
+            torch.cuda.synchronize()
+            torch.cuda.synchronize()
+            elapsed_time = time.time() - t_start
+            iterations *= 2
+        FPS = iterations / elapsed_time
+        iterations = int(FPS * 6)
+
+    print('=========Speed Testing=========')
+    torch.cuda.synchronize()
+    torch.cuda.synchronize()
+    t_start = time.time()
+    for _ in range(iterations):
+        model.forward()
+    torch.cuda.synchronize()
+    torch.cuda.synchronize()
+    elapsed_time = time.time() - t_start
+    latency = elapsed_time / iterations * 1000
+    FPS = 1000 / latency
+    model_performance.extend([FPS, latency])
 
 def load_config(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -129,17 +159,24 @@ model_class = getattr(model_module, model)
 # 实例化模型
 model = model_class()
 
-
 device = torch.device('cuda')
-input = torch.randn(1, 3, 640, 640).to(device)
+
+if category == 'language':
+    with torch.no_grad():
+        for _ in range(10):
+            model.forward()
+
+    
+else:
+    input = torch.randn(1, 3, 640, 640).to(device)
 
 
-model.eval()
-model.to(device)
+    model.eval()
+    model.to(device)
 
-with torch.no_grad():
-    for _ in range(10):
-        model(input)
+    with torch.no_grad():
+        for _ in range(10):
+            model(input)
 
 pynvml.nvmlInit()
 start_event = threading.Event()
@@ -198,7 +235,10 @@ plt.savefig('savefiles/gpu_usage.png')
 
 ###############处理GPU监控结果和模型推理数据#############
 
-# FPS, latency = speed_test(model, input, iterations = None)
+if category == 'language':
+    FPS, latency = speed_tests(model, iterations = None)
+else:
+    FPS, latency = speed_test(model, iterations = None)
 
 FPS, latency = model_performance[0], model_performance[1]
 

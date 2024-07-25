@@ -4,7 +4,10 @@
         "2": "vision"
     },
     "applications": {
-        "language": {},
+        "language": {
+            "1": "generative",
+            "2": "nlp"
+        },
         "vision": {
             "1": "classification",
             "2": "detection",
@@ -12,7 +15,13 @@
         }
     },
     "models": {
-        "language": {},
+        "language": {
+            "generative": {},
+            "nlp": {
+                "1": "bert",
+                "2": "ernie3.0"
+            }
+        },
         "vision": {
             "classification": {
                 "1": "mobilenet",
