@@ -69,7 +69,7 @@ def speed_test(model, input, iterations):
 
     # return FPS, latency
 
-def speed_tests(model, iterations):
+def speed_test_l(model, iterations):
 
     if iterations is None:
         elapsed_time = 0
@@ -165,6 +165,7 @@ if category == 'language':
     with torch.no_grad():
         for _ in range(10):
             model.forward()
+            
 
     
 else:
@@ -236,13 +237,13 @@ plt.savefig('savefiles/gpu_usage.png')
 ###############处理GPU监控结果和模型推理数据#############
 
 if category == 'language':
-    FPS, latency = speed_tests(model, iterations = None)
+    speed_test_l(model, iterations = None)
+    FPS, latency = model_performance[0], model_performance[1]
+    flops, params = model.count_parameters_and_flops()
 else:
-    FPS, latency = speed_test(model, iterations = None)
-
-FPS, latency = model_performance[0], model_performance[1]
-
-flops, params = count_parameters_and_flops(model, input)
+    speed_test(model, iterations = None)
+    FPS, latency = model_performance[0], model_performance[1]
+    flops, params = count_parameters_and_flops(model, input)
 
 print(f"Total parameters: {params:.2f} million")
 
